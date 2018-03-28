@@ -1,0 +1,30 @@
+{
+  "builders": [{
+    "type": "docker",
+    "image": "centos",
+    "commit": true,
+    "run_command": [ "-d", "-t", "-i", "{{.Image}}", "/bin/bash" ],
+    "changes": [
+      "WORKDIR /tmp"
+    ]
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "./install_ansible.sh"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "./test.yml"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "docker-tag",
+        "repository": "test-centos",
+        "tag": "0.1"
+      }
+    ]
+  ]
+}
