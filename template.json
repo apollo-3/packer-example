@@ -1,0 +1,35 @@
+{
+  "builders": [{
+    "type": "docker",
+    "image": "centos",
+    "commit": true,
+    "run_command": [ "-d", "-t", "-i", "--dns=10.6.0.6", "{{.Image}}", "/bin/bash" ],
+    "changes": [
+      "WORKDIR /tmp",
+      "EXPOSE 8080 8080",
+      "CMD [\"/usr/bin/start.sh\"]"
+    ]
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "yum install ansible -y"
+       ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "./tomcat.yml",
+      "playbook_dir": "./playbooks"
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "docker-tag",
+        "repository": "tomcat",
+        "tag": "0.1"
+      }
+    ]
+  ]
+}

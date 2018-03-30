@@ -1,0 +1,81 @@
+---
+- name: Install Packages
+  yum:
+    name: "{{item}}"
+    state: present
+  with_items: "{{packages}}"
+
+- name: Install Monit
+  yum: name=monit state=present
+
+- name: add group "{{tomcat.group}}"
+  group: name="{{tomcat.group}}"
+
+- name: add user "{{tomcat.user}}"
+  user:
+    name: "{{tomcat.user}}"
+    group: "{{tomcat.group}}"
+    home: /usr/share/tomcat
+    createhome: no
+  become: True
+  become_method: sudo
+
+- name: Download Tomcat
+  get_url:
+    url: "{{tomcat.url}}"
+    dest: /tmp/tomcat.tar.gz
+
+- file:
+    path: "{{tomcat.path}}"
+    state: directory
+    mode: 0755
+
+- name: Extract archive
+  command: /bin/tar -xvf /tmp/tomcat.tar.gz -C {{tomcat.path}} --strip 1
+
+- name: Symlink install directory
+  file:
+    src: "{{tomcat.path}}"
+    path: /usr/share/tomcat
+    state: link
+
+- name: Change ownership of Tomcat installation
+  file:
+    path: /usr/share/tomcat/
+    owner: "{{tomcat.user}}"
+    group: "{{tomcat.group}}"
+    state: directory
+    recurse: yes
+
+- name: Configure Tomcat server
+  template:
+    src: server.xml
+    dest: /usr/share/tomcat/conf/
+  notify: restart tomcat
+
+- name: Configure Tomcat users
+  template:
+    src: tomcat-users.xml
+    dest: /usr/share/tomcat/conf/
+  notify: restart tomcat
+
+- name: Install Tomcat init script
+  copy:
+    src: tomcat-initscript.sh
+    dest: "/etc/init.d/{{tomcat.service}}"
+    mode: 0755
+
+- name: Start Tomcat
+  service:
+    name: "{{tomcat.service}}"
+    state: started
+    enabled: yes
+
+- name: Docker Run File
+  copy:
+    src: start.sh
+    dest: "/usr/bin/start.sh"
+    mode: 0755
+
+- name: wait for tomcat to start
+  wait_for: port={{http_port}}

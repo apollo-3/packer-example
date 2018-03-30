@@ -1,5 +1,0 @@
----
-- hosts: localhost
-  tasks:
-    - name: echo test
-      shell: echo "this is test"

@@ -1,0 +1,20 @@
+---
+# Here are variables related to the Tomcat installation
+http_port: 8080
+https_port: 8443
+
+# This will configure a default manager-gui user:
+admin_username: admin
+admin_password: adminsecret
+
+tomcat:
+  user: 'tomcat'
+  group: 'tomcat'
+  url: 'http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.61/bin/apache-tomcat-7.0.61.tar.gz'
+  path: '/opt/tomcat'
+  service: 'tomcat'
+
+packages:
+  - 'java-1.7.0-openjdk'
+  - 'tar'
+  - 'epel-release'
